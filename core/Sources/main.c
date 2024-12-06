@@ -1,5 +1,6 @@
 /* Header file with all the essential definitions for a given type of MCU */
-#include "MK60DZ10.h"
+// #include "MK60DZ10.h"
+#include "../Includes/MK60DZ10.h"
 
 /* Macros for bit-level registers manipulation */
 #define GPIO_PIN_MASK	0x1Fu
@@ -38,16 +39,16 @@ typedef struct {
 	Direction direction;        // Current direction of movement
 } Snake;
 
-/* Global variable for Snake structure */
+/* Global variable for the Snake structure */
 Snake snake;
+
+/* Array of pin numbers to use */
+unsigned int column_pins[4] = {8, 10, 6, 11};  // A0-A3
+unsigned int row_pins[8] = {26, 24, 9, 25, 28, 7, 27, 29};  // R0-R7
+unsigned int button_pins[5] = {10, 11, 12, 26, 27};  // RIGHT, STOP, DOWN, UP, LEFT
 
 /* Configuration of the necessary MCU peripherals */
 void SystemConfig() {
-	/* Array of pin numbers to use */
-	unsigned int column_pins[4] = {8, 10, 6, 11};  // A0-A3
-	unsigned int row_pins[8] = {26, 24, 9, 25, 28, 7, 27, 29}; // R0-R7
-	unsigned int button_pins[5] = {10, 11, 12, 26, 27}; // RIGHT, STOP, DOWN, UP, LEFT
-
 	/* Turn on all port clocks */
 	SIM->SCGC5 = SIM_SCGC5_PORTA_MASK | SIM_SCGC5_PORTE_MASK;
 
