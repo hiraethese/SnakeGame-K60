@@ -34,9 +34,9 @@ typedef enum {
 
 /* Define the snake structure */
 typedef struct {
-	int body[SNAKE_LENGTH][2];  // Array of coordinates [x, y]
-	int length;                 // Predefined length
-	Direction direction;        // Current direction of movement
+	int body[SNAKE_LENGTH][2];  /* Array of coordinates [x, y] */
+	int length;                 /* Predefined length */
+	Direction direction;        /* Current direction of movement */
 } Snake;
 
 /* Global variable for the Snake structure */
@@ -64,13 +64,11 @@ void SystemConfig() {
 
 	/* Set corresponding PTE pins (buttons) for GPIO functionality */
 	for (int i = 0; i < 5; i++) {
-		PORTE->PCR[button_pins[i]] = (
-			PORT_PCR_ISF(1) |      /* Clear ISF */
-			PORT_PCR_IRQC(0x0A) |  /* Interrupt on falling edge */
-			PORT_PCR_MUX(0x01) |   /* Pin Mux Control: GPIO */
-			PORT_PCR_PE |          /* Enable pull resistor */
-			PORT_PCR_PS            /* Select pull-up resistor */
-		);
+		PORTE->PCR[button_pins[i]] &= ~PORT_PCR_ISF_MASK;   /* Clear ISF */
+		PORTE->PCR[button_pins[i]] |= PORT_PCR_IRQC(0x0A);  /* Interrupt on falling edge */
+		PORTE->PCR[button_pins[i]] |= PORT_PCR_MUX(0x01);   /* Pin Mux Control: GPIO */
+		PORTE->PCR[button_pins[i]] |= PORT_PCR_PE_MASK;     /* Enable pull resistor */
+		PORTE->PCR[button_pins[i]] |= PORT_PCR_PS_MASK;     /* Select pull-up resistor */
 	}
 
 	/* Set corresponding PTE pins (output enable of 74HC154) for GPIO functionality */
