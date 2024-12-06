@@ -214,7 +214,7 @@ void display_snake() {
 	for(int i = 0; i < snake.length; i++) {
 		column_select(snake.body[i][0]);
 		row_select(snake.body[i][1]);
-		delay(400, 50);
+		delay(tdelay1, tdelay2);
 	}
 }
 
