@@ -41,45 +41,36 @@ typedef struct {
 /* Global variable for Snake structure */
 Snake snake;
 
-/* Define the pin for each row */
-unsigned int row_pins[8] = {
-	GPIO_PIN(26),  // R0
-	GPIO_PIN(24),  // R1
-	GPIO_PIN(9),   // R2
-	GPIO_PIN(25),  // R3
-	GPIO_PIN(28),  // R4
-	GPIO_PIN(7),   // R5
-	GPIO_PIN(27),  // R6
-	GPIO_PIN(29)   // R7
-};
-
 /* Configuration of the necessary MCU peripherals */
 void SystemConfig() {
+	/* Array of pin numbers to use */
+	unsigned int column_pins[4] = {8, 10, 6, 11};  // A0-A3
+	unsigned int row_pins[8] = {26, 24, 9, 25, 28, 7, 27, 29}; // R0-R7
+	unsigned int button_pins[5] = {10, 11, 12, 26, 27}; // RIGHT, STOP, DOWN, UP, LEFT
+
 	/* Turn on all port clocks */
 	SIM->SCGC5 = SIM_SCGC5_PORTA_MASK | SIM_SCGC5_PORTE_MASK;
 
 	/* Set corresponding PTA pins (column activators of 74HC154) for GPIO functionality */
-	PORTA->PCR[8] = ( 0|PORT_PCR_MUX(0x01) );  // A0
-	PORTA->PCR[10] = ( 0|PORT_PCR_MUX(0x01) ); // A1
-	PORTA->PCR[6] = ( 0|PORT_PCR_MUX(0x01) );  // A2
-	PORTA->PCR[11] = ( 0|PORT_PCR_MUX(0x01) ); // A3
+	for (int i = 0; i < 4; i++) {
+		PORTA->PCR[column_pins[i]] = ( 0|PORT_PCR_MUX(0x01) );
+	}
 
 	/* Set corresponding PTA pins (rows selectors of 74HC154) for GPIO functionality */
-	PORTA->PCR[26] = ( 0|PORT_PCR_MUX(0x01) );  // R0
-	PORTA->PCR[24] = ( 0|PORT_PCR_MUX(0x01) );  // R1
-	PORTA->PCR[9] = ( 0|PORT_PCR_MUX(0x01) );   // R2
-	PORTA->PCR[25] = ( 0|PORT_PCR_MUX(0x01) );  // R3
-	PORTA->PCR[28] = ( 0|PORT_PCR_MUX(0x01) );  // R4
-	PORTA->PCR[7] = ( 0|PORT_PCR_MUX(0x01) );   // R5
-	PORTA->PCR[27] = ( 0|PORT_PCR_MUX(0x01) );  // R6
-	PORTA->PCR[29] = ( 0|PORT_PCR_MUX(0x01) );  // R7
+	for (int i = 0; i < 8; i++) {
+		PORTA->PCR[row_pins[i]] = ( 0|PORT_PCR_MUX(0x01) );
+	}
 
 	/* Set corresponding PTE pins (buttons) for GPIO functionality */
-	PORTE->PCR[10] = ( PORT_PCR_ISF(0x01)|PORT_PCR_IRQC(0x0A)|PORT_PCR_MUX(0x01)|PORT_PCR_PE(0x01)|PORT_PCR_PS(0x01) );  // RIGHT
-	PORTE->PCR[11] = ( PORT_PCR_ISF(0x01)|PORT_PCR_IRQC(0x0A)|PORT_PCR_MUX(0x01)|PORT_PCR_PE(0x01)|PORT_PCR_PS(0x01) );  // STOP
-	PORTE->PCR[12] = ( PORT_PCR_ISF(0x01)|PORT_PCR_IRQC(0x0A)|PORT_PCR_MUX(0x01)|PORT_PCR_PE(0x01)|PORT_PCR_PS(0x01) );  // DOWN
-	PORTE->PCR[26] = ( PORT_PCR_ISF(0x01)|PORT_PCR_IRQC(0x0A)|PORT_PCR_MUX(0x01)|PORT_PCR_PE(0x01)|PORT_PCR_PS(0x01) );  // UP
-	PORTE->PCR[27] = ( PORT_PCR_ISF(0x01)|PORT_PCR_IRQC(0x0A)|PORT_PCR_MUX(0x01)|PORT_PCR_PE(0x01)|PORT_PCR_PS(0x01) );  // LEFT
+	for (int i = 0; i < 5; i++) {
+		PORTE->PCR[button_pins[i]] = (
+			PORT_PCR_ISF(1) |      /* Clear ISF */
+			PORT_PCR_IRQC(0x0A) |  /* Interrupt on falling edge */
+			PORT_PCR_MUX(0x01) |   /* Pin Mux Control: GPIO */
+			PORT_PCR_PE |          /* Enable pull resistor */
+			PORT_PCR_PS            /* Select pull-up resistor */
+		);
+	}
 
 	/* Set corresponding PTE pins (output enable of 74HC154) for GPIO functionality */
 	PORTE->PCR[28] = ( 0|PORT_PCR_MUX(0x01) ); // #EN
@@ -91,7 +82,7 @@ void SystemConfig() {
 	PTE->PDDR &= ~( GPIO_PIN(10)|GPIO_PIN(11)|GPIO_PIN(12)|GPIO_PIN(26)|GPIO_PIN(27) );
 
 	/* Change corresponding PTE port pins as outputs */
-	PTE->PDDR = GPIO_PDDR_PDD( GPIO_PIN(28) );
+	PTE->PDDR |= GPIO_PIN(28);
 
 	/* Clear any pending interrupts on Port E */
 	NVIC_ClearPendingIRQ(PORTE_IRQn);
