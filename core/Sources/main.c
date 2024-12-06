@@ -16,6 +16,10 @@
 #define	tdelay1			10000
 #define tdelay2 		20
 
+/* Define the LED matrix properties */
+#define ROWS 8
+#define COLS 16
+
 /* Define the snake properties */
 #define SNAKE_LENGTH 5
 
@@ -189,18 +193,10 @@ void update_snake() {
     }
 
     /* Teleport the snake if out of bounds */
-    if (new_head_x < 0) {
-        new_head_x = 7;
-    }
-    if (new_head_x >= 8) {
-        new_head_x = 0;
-    }
-    if (new_head_y < 0) {
-        new_head_y = 15;
-    }
-    if (new_head_y >= 16) {
-        new_head_y = 0;
-    }
+    if (new_head_x < 0) new_head_x = ROWS - 1;
+    if (new_head_x >= ROWS) new_head_x = 0;
+    if (new_head_y < 0) new_head_y = COLS - 1;
+    if (new_head_y >= COLS) new_head_y = 0;
 
     /* Shift body positions */
     for (int i = snake.length - 1; i > 0; i--) {
