@@ -252,17 +252,15 @@ int main(void)
 	/* Configure the hardware */
 	SystemConfig();
 
-	// PTA->PDOR |= GPIO_PDOR_PDO(0x3F000280); // turning the pixels of a particular row ON
-	// PTE->PDOR |= GPIO_PDOR_PDO( GPIO_PIN(28));
-	// delay(tdelay1, tdelay2);
-
 	/* Initialize the snake */
 	init_snake();
+	display_snake();
+	delay(tdelay1, tdelay2);
 
 	/* Main loop */
     while(1) {
-    	display_snake();
 		update_snake();
+    	display_snake();
 		delay(tdelay1, tdelay2);
     }
 
