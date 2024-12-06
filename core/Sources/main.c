@@ -62,6 +62,9 @@ void SystemConfig() {
 		PORTA->PCR[row_pins[i]] = ( 0|PORT_PCR_MUX(0x01) );
 	}
 
+	/* Set corresponding PTE pins (output enable of 74HC154) for GPIO functionality */
+	PORTE->PCR[28] = ( 0|PORT_PCR_MUX(0x01) ); // #EN
+
 	/* Set corresponding PTE pins (buttons) for GPIO functionality */
 	for (int i = 0; i < 5; i++) {
 		PORTE->PCR[button_pins[i]] &= ~PORT_PCR_ISF_MASK;   /* Clear ISF */
@@ -70,9 +73,6 @@ void SystemConfig() {
 		PORTE->PCR[button_pins[i]] |= PORT_PCR_PE_MASK;     /* Enable pull resistor */
 		PORTE->PCR[button_pins[i]] |= PORT_PCR_PS_MASK;     /* Select pull-up resistor */
 	}
-
-	/* Set corresponding PTE pins (output enable of 74HC154) for GPIO functionality */
-	PORTE->PCR[28] = ( 0|PORT_PCR_MUX(0x01) ); // #EN
 
 	/* Change corresponding PTA port pins as outputs */
 	PTA->PDDR = GPIO_PDDR_PDD(0x3F000FC0);
@@ -145,7 +145,7 @@ void row_select(unsigned int row_num) {
 	PTA->PDOR &= ~GPIO_PDOR_PDO(0xFFFF);
 
 	/* Set the selected row */
-	PTA->PDOR |= GPIO_PDOR_PDO(row_pins[row_num]);
+	PTA->PDOR |= GPIO_PDOR_PDO( GPIO_PIN(row_pins[row_num]) );
 }
 
 /* Initialize the snake */
@@ -204,7 +204,9 @@ void display_snake() {
 	for(int i = 0; i < snake.length; i++) {
 		column_select(snake.body[i][0]);
 		row_select(snake.body[i][1]);
+		PTE->PDDR &= ~GPIO_PDDR_PDD( GPIO_PIN(28) );
 		delay(tdelay1, tdelay2);
+		PTE->PDOR |= GPIO_PDOR_PDO( GPIO_PIN(28) );
 	}
 }
 
@@ -255,13 +257,11 @@ int main(void)
 	/* Initialize the snake */
 	init_snake();
 	display_snake();
-	delay(tdelay1, tdelay2);
 
 	/* Main loop */
     while(1) {
 		update_snake();
     	display_snake();
-		delay(tdelay1, tdelay2);
     }
 
     /* Never leave main */
