@@ -49,6 +49,28 @@ unsigned int button_pins[5] = {10, 11, 12, 26, 27};  // RIGHT, STOP, DOWN, UP, L
 
 /* Configuration of the necessary MCU peripherals */
 void SystemConfig() {
+	/* Hardware initialization */
+	MCG->C4 |= ( MCG_C4_DMX32_MASK | MCG_C4_DRST_DRS(0x01) );
+	SIM->CLKDIV1 |= SIM_CLKDIV1_OUTDIV1(0x00);
+	SIM->SCGC5 |= SIM_SCGC5_PORTE_MASK;
+
+	/* Set corresponding PTE pins (buttons) for GPIO functionality */
+	for (int i = 0; i < 5; i++) {
+		PORTE->PCR[button_pins[i]] = (
+			PORT_PCR_ISF_MASK |    /* Clear ISF */
+			PORT_PCR_IRQC(0x0A) |  /* Interrupt on falling edge */
+			PORT_PCR_MUX(0x01) |   /* GPIO */
+			PORT_PCR_PE_MASK |     /* Enable pull resistor */
+			PORT_PCR_PS_MASK       /* Select pull-up resistor */
+		);
+	}
+
+	/* Clear any pending interrupts on Port E */
+	NVIC_ClearPendingIRQ(PORTE_IRQn);
+
+	/* Enable interrupts for Port E */
+	NVIC_EnableIRQ(PORTE_IRQn);
+
 	/* Turn on all port clocks */
 	SIM->SCGC5 = SIM_SCGC5_PORTA_MASK | SIM_SCGC5_PORTE_MASK;
 
@@ -61,33 +83,15 @@ void SystemConfig() {
 	for (int i = 0; i < 8; i++) {
 		PORTA->PCR[row_pins[i]] = ( 0|PORT_PCR_MUX(0x01) );
 	}
-
+	
 	/* Set corresponding PTE pins (output enable of 74HC154) for GPIO functionality */
 	PORTE->PCR[28] = ( 0|PORT_PCR_MUX(0x01) ); // #EN
-
-	/* Set corresponding PTE pins (buttons) for GPIO functionality */
-	for (int i = 0; i < 5; i++) {
-		PORTE->PCR[button_pins[i]] &= ~PORT_PCR_ISF_MASK;   /* Clear ISF */
-		PORTE->PCR[button_pins[i]] |= PORT_PCR_IRQC(0x0A);  /* Interrupt on falling edge */
-		PORTE->PCR[button_pins[i]] |= PORT_PCR_MUX(0x01);   /* Pin Mux Control: GPIO */
-		PORTE->PCR[button_pins[i]] |= PORT_PCR_PE_MASK;     /* Enable pull resistor */
-		PORTE->PCR[button_pins[i]] |= PORT_PCR_PS_MASK;     /* Select pull-up resistor */
-	}
-
+	
 	/* Change corresponding PTA port pins as outputs */
 	PTA->PDDR = GPIO_PDDR_PDD(0x3F000FC0);
-
-	/* Change corresponding PTE port pins as inputs */
-	PTE->PDDR &= ~( GPIO_PIN(10)|GPIO_PIN(11)|GPIO_PIN(12)|GPIO_PIN(26)|GPIO_PIN(27) );
-
+	
 	/* Change corresponding PTE port pins as outputs */
-	PTE->PDDR |= GPIO_PIN(28);
-
-	/* Clear any pending interrupts on Port E */
-	NVIC_ClearPendingIRQ(PORTE_IRQn);
-
-	/* Enable interrupts for Port E */
-	NVIC_EnableIRQ(PORTE_IRQn);
+	PTE->PDDR = GPIO_PDDR_PDD( GPIO_PIN(28) );
 }
 
 /* Variable delay loop */
@@ -141,7 +145,7 @@ void column_select(unsigned int col_num)
 
 /* Selection of the row signal */
 void row_select(unsigned int row_num) {
-	PTA->PDOR |= GPIO_PDOR_PDO( GPIO_PIN(row_pins[row_num]) );
+	/* TODO: Implement the row selection later */
 }
 
 /* Initialize the snake */
@@ -197,37 +201,11 @@ void update_snake() {
 
 /* Display the snake */
 void display_snake() {
-    for (int col = 0; col < COLS; col++) {
-        column_select(col); // Activate current column
-        int column_has_pixels = 0; // Track if the column has any pixels active
-
-        for (int row = 0; row < ROWS; row++) {
-            int pixel_active = 0;
-
-            // Check if any snake part is in the current column and row
-            for (int i = 0; i < snake.length; i++) {
-                if (snake.body[i][0] == col && snake.body[i][1] == row) {
-                    pixel_active = 1; // Mark pixel as active
-                    break;
-                }
-            }
-
-            // Light or clear the row
-            if (pixel_active) {
-                row_select(row); // Activate row for the pixel
-                column_has_pixels = 1; // Mark column as having active pixels
-            } else {
-                PTA->PDOR &= ~GPIO_PDOR_PDO(GPIO_PIN(row_pins[row])); // Clear row pixel
-            }
-        }
-
-        // If the column has pixels, activate it with the EN pin
-        if (column_has_pixels) {
-            PTE->PDOR |= GPIO_PDOR_PDO(GPIO_PIN(28)); // Enable column
-            delay(tdelay1, tdelay2); // Add a short delay for persistence
-            PTE->PDOR &= ~GPIO_PDOR_PDO(GPIO_PIN(28)); // Disable column
-        }
-    }
+    for (int i = 0; i < snake.length; i++) {
+		column_select(snake.body[i][0]);
+		row_select(snake.body[i][1]);
+		delay(400, 50);
+	}
 }
 
 void PORTE_IRQHandler() {
@@ -288,11 +266,12 @@ int main(void)
 {
 	SystemConfig();
 	init_snake();
+	PTA->PDOR = 0x00;
 
     while(1) {
 		display_snake();
 		update_snake();
-    	delay(tdelay1 * 10, tdelay2);
+		delay(2000, 100);
     }
 
     return 0;
