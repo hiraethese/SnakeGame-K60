@@ -197,14 +197,22 @@ void update_snake() {
 
 /* Display the snake */
 void display_snake() {
-	/* Enable the matrix by driving EN LOW */
-    PTE->PDOR &= ~GPIO_PDOR_PDO(GPIO_PIN(28));
+	for (int col = 0; col < COLS; col++) {
+		column_select(col);
+		int column_active = 0;
 
-	/* Loop through all segments of the snake */
-	for(int i = 0; i < snake.length; i++) {
-		column_select(snake.body[i][0]);
-		row_select(snake.body[i][1]);
-		delay(tdelay1, tdelay2);
+		for (int i = 0; i < snake.length; i++) {
+			if (snake.body[i][0] == col) {
+				row_select(snake.body[i][1]);
+				column_active = 1;
+			}
+		}
+
+		if (column_active) {
+			PTE->PDOR |= GPIO_PDOR_PDO(GPIO_PIN(28));
+			delay(tdelay1, tdelay2);
+			PTE->PDOR &= ~GPIO_PDOR_PDO(GPIO_PIN(28));
+		}
 	}
 }
 
@@ -249,19 +257,14 @@ void PORTE_IRQHandler() {
 /* Main function */
 int main(void)
 {
-	/* Configure the hardware */
 	SystemConfig();
-
-	/* Initialize the snake */
 	init_snake();
-	display_snake();
 
-	/* Main loop */
     while(1) {
+		display_snake();
 		update_snake();
-    	display_snake();
+    	delay(tdelay1 * 10, tdelay2);
     }
 
-    /* Never leave main */
     return 0;
 }
