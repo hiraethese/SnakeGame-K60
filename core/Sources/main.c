@@ -141,8 +141,11 @@ void column_select(unsigned int col_num)
 
 /* Selection of the row signal */
 void row_select(unsigned int row_num) {
-	/* Mask for row pins only */
-	unsigned int row_mask = 0x3F000FC0;
+	/* Define the row mask for all rows */
+    unsigned int row_mask = GPIO_PDOR_PDO(
+        GPIO_PIN(26) | GPIO_PIN(24) | GPIO_PIN(9) | GPIO_PIN(25) |
+        GPIO_PIN(28) | GPIO_PIN(7) | GPIO_PIN(27) | GPIO_PIN(29)
+    );
 
 	/* Clear all row pins */
 	PTA->PDOR &= ~row_mask;
