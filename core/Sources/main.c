@@ -141,8 +141,11 @@ void column_select(unsigned int col_num)
 
 /* Selection of the row signal */
 void row_select(unsigned int row_num) {
-	/* Clear all rows */
-	PTA->PDOR &= ~GPIO_PDOR_PDO(0xFFFF);
+	/* Mask for row pins only */
+	unsigned int row_mask = 0x3F000FC0;
+
+	/* Clear all row pins */
+	PTA->PDOR &= ~row_mask;
 
 	/* Set the selected row */
 	PTA->PDOR |= GPIO_PDOR_PDO( GPIO_PIN(row_pins[row_num]) );
@@ -204,9 +207,7 @@ void display_snake() {
 	for(int i = 0; i < snake.length; i++) {
 		column_select(snake.body[i][0]);
 		row_select(snake.body[i][1]);
-		PTE->PDDR &= ~GPIO_PDDR_PDD( GPIO_PIN(28) );
 		delay(tdelay1, tdelay2);
-		PTE->PDOR |= GPIO_PDOR_PDO( GPIO_PIN(28) );
 	}
 }
 
