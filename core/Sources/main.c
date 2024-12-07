@@ -233,39 +233,54 @@ void display_snake() {
 void PORTE_IRQHandler() {
 	/* Check if RIGHT button caused the interrupt */
 	if (PORTE->ISFR & BUTTON_RIGHT_MASK) {
-		if (snake.direction != LEFT) {
-			snake.direction = RIGHT;
+		if ( !(PTE->PDDR & BUTTON_RIGHT_MASK) ) {
+			PTA->PDOR = 0x00;
+			if (snake.direction != LEFT) {
+				snake.direction = RIGHT;
+			}
 		}
 	}
 
 	/* Check if STOP button caused the interrupt */
 	if (PORTE->ISFR & BUTTON_STOP_MASK) {
-		/* TODO: Implement the STOP button handling later */
+		if ( !(PTE->PDDR & BUTTON_STOP_MASK) ) {
+			PTA->PDOR = 0x00;
+			/* TODO: Implement the STOP button handling later */
+		}
 	}
 
 	/* Check if DOWN button caused the interrupt */
 	if (PORTE->ISFR & BUTTON_DOWN_MASK) {
-		if (snake.direction != UP) {
-			snake.direction = DOWN;
+		if ( !(PTE->PDDR & BUTTON_DOWN_MASK) ) {
+			PTA->PDOR = 0x00;
+			if (snake.direction != UP) {
+				snake.direction = DOWN;
+			}
 		}
 	}
 
 	/* Check if UP button caused the interrupt */
 	if (PORTE->ISFR & BUTTON_UP_MASK) {
-		if (snake.direction != DOWN) {
-			snake.direction = UP;
+		if ( !(PTE->PDDR & BUTTON_UP_MASK) ) {
+			PTA->PDOR = 0x00;
+			if (snake.direction != DOWN) {
+				snake.direction = UP;
+			}
 		}
 	}
 
 	/* Check if LEFT button caused the interrupt */
 	if (PORTE->ISFR & BUTTON_LEFT_MASK) {
-		if (snake.direction != RIGHT) {
-			snake.direction = LEFT;
+		if ( !(PTE->PDDR & BUTTON_LEFT_MASK) ) {
+			PTA->PDOR = 0x00;
+			if (snake.direction != RIGHT) {
+				snake.direction = LEFT;
+			}
 		}
 	}
 
 	/* Clear all interrupt flags */
-	PORTE->ISFR = ( BUTTON_RIGHT_MASK|BUTTON_STOP_MASK|BUTTON_DOWN_MASK|BUTTON_UP_MASK|BUTTON_LEFT_MASK );
+	PORTE->ISFR = PORT_ISFR_ISF_MASK;
 }
 
 /* Main function */
