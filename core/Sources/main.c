@@ -145,7 +145,11 @@ void column_select(unsigned int col_num)
 
 /* Selection of the row signal */
 void row_select(unsigned int row_num) {
-	/* TODO: Implement the row selection later */
+	static const unsigned int row_mask = 0x3F000FC0;
+	unsigned int selected_row_pin = GPIO_PDOR_PDO( GPIO_PIN(row_pins[row_num]) );
+
+	/* Clear all rows and activate only the selected row */
+	PTA->PDOR = (PTA->PDOR & ~row_mask) | selected_row_pin;
 }
 
 /* Initialize the snake */
