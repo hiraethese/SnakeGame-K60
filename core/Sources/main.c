@@ -141,7 +141,7 @@ void column_select(unsigned int col_num)
 
 /* Selection of the row signal */
 void row_select(unsigned int row_num) {
-	PTA->PDOR = (PTA->PDOR & ~0x3F000FC0) | GPIO_PDOR_PDO(GPIO_PIN(row_pins[row_num]));
+	PTA->PDOR |= GPIO_PDOR_PDO( GPIO_PIN(row_pins[row_num]) );
 }
 
 /* Initialize the snake */
@@ -197,23 +197,37 @@ void update_snake() {
 
 /* Display the snake */
 void display_snake() {
-	for (int col = 0; col < COLS; col++) {
-		column_select(col);
-		int column_active = 0;
+    for (int col = 0; col < COLS; col++) {
+        column_select(col); // Activate current column
+        int column_has_pixels = 0; // Track if the column has any pixels active
 
-		for (int i = 0; i < snake.length; i++) {
-			if (snake.body[i][0] == col) {
-				row_select(snake.body[i][1]);
-				column_active = 1;
-			}
-		}
+        for (int row = 0; row < ROWS; row++) {
+            int pixel_active = 0;
 
-		if (column_active) {
-			PTE->PDOR |= GPIO_PDOR_PDO(GPIO_PIN(28));
-			delay(tdelay1, tdelay2);
-			PTE->PDOR &= ~GPIO_PDOR_PDO(GPIO_PIN(28));
-		}
-	}
+            // Check if any snake part is in the current column and row
+            for (int i = 0; i < snake.length; i++) {
+                if (snake.body[i][0] == col && snake.body[i][1] == row) {
+                    pixel_active = 1; // Mark pixel as active
+                    break;
+                }
+            }
+
+            // Light or clear the row
+            if (pixel_active) {
+                row_select(row); // Activate row for the pixel
+                column_has_pixels = 1; // Mark column as having active pixels
+            } else {
+                PTA->PDOR &= ~GPIO_PDOR_PDO(GPIO_PIN(row_pins[row])); // Clear row pixel
+            }
+        }
+
+        // If the column has pixels, activate it with the EN pin
+        if (column_has_pixels) {
+            PTE->PDOR |= GPIO_PDOR_PDO(GPIO_PIN(28)); // Enable column
+            delay(tdelay1, tdelay2); // Add a short delay for persistence
+            PTE->PDOR &= ~GPIO_PDOR_PDO(GPIO_PIN(28)); // Disable column
+        }
+    }
 }
 
 void PORTE_IRQHandler() {
