@@ -206,11 +206,9 @@ void update_snake() {
 /* Display the snake */
 void display_snake() {
     for (int i = 0; i < snake.length; i++) {
-		row_select(snake.body[i][0]);
 		column_select(snake.body[i][1]);
-		PTE->PDDR &= ~GPIO_PDDR_PDD( GPIO_PIN(28) );
-		delay(tdelay1, tdelay2);
-		PTE->PDOR |= GPIO_PDOR_PDO( GPIO_PIN(28) );
+		row_select(snake.body[i][0]);
+		delay(400, 50);
 	}
 }
 
