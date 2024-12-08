@@ -194,6 +194,10 @@ void update_snake() {
             break;
     }
 
+	/* Ensure new head stays within bounds */
+    new_head_row = (new_head_row + ROWS) % ROWS;
+    new_head_col = (new_head_col + COLS) % COLS;
+
     /* Teleport the snake if out of bounds */
     if (new_head_row < 0) new_head_row = ROWS - 1;
     if (new_head_row >= ROWS) new_head_row = 0;
@@ -217,7 +221,7 @@ void display_snake() {
     for (int i = 0; i < snake.length; i++) {
         row_select(snake.body[i][0]);
         column_select(snake.body[i][1]);
-        delay(50, 10);
+        delay(400, 50);
     }
 
 	/* Clear the matrix after a complete display cycle */
