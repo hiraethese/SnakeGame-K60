@@ -218,19 +218,21 @@ void display_snake() {
 	// 	column_select(snake.body[i][1]);
 	// 	delay(400, 50);
 	// }
-	for (int i = 0; i < snake.length; i++) {
+
+	// Draw each segment of the snake
+    for (int i = 0; i < snake.length; i++) {
         row_select(snake.body[i][0]);
         column_select(snake.body[i][1]);
         delay(50, 10);
     }
-	// Clear the matrix after displaying the entire snake
-	for (int i = 0; i < 8; i++) {
-        PTA->PDOR &= ~GPIO_PDOR_PDO(GPIO_PIN(row_pins[i]));
+
+	// Clear the matrix *after* a complete display cycle
+    for (int i = 0; i < 8; i++) {
+        PTA->PDOR &= ~GPIO_PDOR_PDO( GPIO_PIN(row_pins[i]) );
     }
     for (int i = 0; i < 4; i++) {
-        PTA->PDOR &= ~GPIO_PDOR_PDO(GPIO_PIN(column_pins[i]));
+        PTA->PDOR &= ~GPIO_PDOR_PDO( GPIO_PIN(column_pins[i]) );
     }
-	delay(200, 50);
 }
 
 void PORTE_IRQHandler() {
