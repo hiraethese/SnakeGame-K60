@@ -49,6 +49,17 @@ unsigned int column_pins[4] = {8, 10, 6, 11};  // A0-A3
 unsigned int row_pins[8] = {26, 24, 9, 25, 28, 7, 27, 29};  // R0-R7
 unsigned int button_pins[5] = {10, 11, 12, 26, 27};  // RIGHT, STOP, DOWN, UP, LEFT
 
+void SystemConfig(void);
+void PIT_Init(void);
+void PIT0_IRQHandler(void);
+void PORTE_IRQHandler(void);
+void delay(int t1, int t2);
+void column_select(unsigned int col_num);
+void row_select(unsigned int row_num);
+void init_snake(void);
+void update_snake(void);
+void display_snake(void);
+
 /* Configuration of the necessary MCU peripherals */
 void SystemConfig() {
 	/* Hardware initialization */
@@ -94,6 +105,74 @@ void SystemConfig() {
 
 	/* Change corresponding PTE port pins as outputs */
 	PTE->PDDR = GPIO_PDDR_PDD( GPIO_PIN(28) );
+
+	PIT_Init();
+}
+
+void PIT_Init() {
+	SIM->SCGC6 |= SIM_SCGC6_PIT_MASK;
+    PIT->MCR = 0x00;
+    PIT->CHANNEL[0].LDVAL = 48000;
+    PIT->CHANNEL[0].TCTRL |= PIT_TCTRL_TIE_MASK | PIT_TCTRL_TEN_MASK;
+    NVIC_EnableIRQ(PIT0_IRQn);
+}
+
+void PIT0_IRQHandler() {
+	PIT->CHANNEL[0].TFLG |= PIT_TFLG_TIF_MASK;
+	display_snake();
+}
+
+void PORTE_IRQHandler() {
+	/* Check if STOP button caused the interrupt */
+	if (PORTE->ISFR & BUTTON_STOP_MASK) {
+		if ( !(PTE->PDDR & BUTTON_STOP_MASK) ) {
+			if (snake.dir == STOP) {
+				snake.dir = snake.dir_before_stop;
+			} else {
+				snake.dir_before_stop = snake.dir;
+				snake.dir = STOP;
+			}
+		}
+	}
+
+	/* Check if RIGHT button caused the interrupt */
+	if (PORTE->ISFR & BUTTON_RIGHT_MASK) {
+		if ( !(PTE->PDDR & BUTTON_RIGHT_MASK) ) {
+			if (snake.dir != LEFT && snake.dir != STOP) {
+				snake.dir = RIGHT;
+			}
+		}
+	}
+
+	/* Check if DOWN button caused the interrupt */
+	if (PORTE->ISFR & BUTTON_DOWN_MASK) {
+		if ( !(PTE->PDDR & BUTTON_DOWN_MASK) ) {
+			if (snake.dir != UP && snake.dir != STOP) {
+				snake.dir = DOWN;
+			}
+		}
+	}
+
+	/* Check if UP button caused the interrupt */
+	if (PORTE->ISFR & BUTTON_UP_MASK) {
+		if ( !(PTE->PDDR & BUTTON_UP_MASK) ) {
+			if (snake.dir != DOWN && snake.dir != STOP) {
+				snake.dir = UP;
+			}
+		}
+	}
+
+	/* Check if LEFT button caused the interrupt */
+	if (PORTE->ISFR & BUTTON_LEFT_MASK) {
+		if ( !(PTE->PDDR & BUTTON_LEFT_MASK) ) {
+			if (snake.dir != RIGHT && snake.dir != STOP) {
+				snake.dir = LEFT;
+			}
+		}
+	}
+
+	/* Clear all interrupt flags */
+	PORTE->ISFR = PORT_ISFR_ISF_MASK;
 }
 
 /* Variable delay loop */
@@ -194,10 +273,6 @@ void update_snake() {
             break;
     }
 
-	/* Ensure new head stays within bounds */
-    new_head_row = (new_head_row + ROWS) % ROWS;
-    new_head_col = (new_head_col + COLS) % COLS;
-
     /* Teleport the snake if out of bounds */
     if (new_head_row < 0) new_head_row = ROWS - 1;
     if (new_head_row >= ROWS) new_head_row = 0;
@@ -233,59 +308,6 @@ void display_snake() {
     }
 }
 
-void PORTE_IRQHandler() {
-	/* Check if STOP button caused the interrupt */
-	if (PORTE->ISFR & BUTTON_STOP_MASK) {
-		if ( !(PTE->PDDR & BUTTON_STOP_MASK) ) {
-			if (snake.dir == STOP) {
-				snake.dir = snake.dir_before_stop;
-			} else {
-				snake.dir_before_stop = snake.dir;
-				snake.dir = STOP;
-			}
-		}
-	}
-
-	/* Check if RIGHT button caused the interrupt */
-	if (PORTE->ISFR & BUTTON_RIGHT_MASK) {
-		if ( !(PTE->PDDR & BUTTON_RIGHT_MASK) ) {
-			if (snake.dir != LEFT && snake.dir != STOP) {
-				snake.dir = RIGHT;
-			}
-		}
-	}
-
-	/* Check if DOWN button caused the interrupt */
-	if (PORTE->ISFR & BUTTON_DOWN_MASK) {
-		if ( !(PTE->PDDR & BUTTON_DOWN_MASK) ) {
-			if (snake.dir != UP && snake.dir != STOP) {
-				snake.dir = DOWN;
-			}
-		}
-	}
-
-	/* Check if UP button caused the interrupt */
-	if (PORTE->ISFR & BUTTON_UP_MASK) {
-		if ( !(PTE->PDDR & BUTTON_UP_MASK) ) {
-			if (snake.dir != DOWN && snake.dir != STOP) {
-				snake.dir = UP;
-			}
-		}
-	}
-
-	/* Check if LEFT button caused the interrupt */
-	if (PORTE->ISFR & BUTTON_LEFT_MASK) {
-		if ( !(PTE->PDDR & BUTTON_LEFT_MASK) ) {
-			if (snake.dir != RIGHT && snake.dir != STOP) {
-				snake.dir = LEFT;
-			}
-		}
-	}
-
-	/* Clear all interrupt flags */
-	PORTE->ISFR = PORT_ISFR_ISF_MASK;
-}
-
 /* Main function */
 int main(void)
 {
@@ -293,7 +315,7 @@ int main(void)
 	init_snake();
 
     while(1) {
-		display_snake();
+		// display_snake();
 		update_snake();
 		delay(tdelay1, tdelay2);
     }
