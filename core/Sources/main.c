@@ -26,8 +26,8 @@
 
 /* Define the direction of movement */
 typedef enum {
-	RIGHT,
 	STOP,
+	RIGHT,
 	DOWN,
 	UP,
 	LEFT
@@ -214,23 +214,13 @@ void update_snake() {
 /* Display the snake */
 void display_snake() {
     for (int i = 0; i < snake.length; i++) {
-		column_select(snake.body[i][1]);
 		row_select(snake.body[i][0]);
+		column_select(snake.body[i][1]);
 		delay(400, 50);
 	}
 }
 
 void PORTE_IRQHandler() {
-	/* Check if RIGHT button caused the interrupt */
-	if (PORTE->ISFR & BUTTON_RIGHT_MASK) {
-		if ( !(PTE->PDDR & BUTTON_RIGHT_MASK) ) {
-			PTA->PDOR = 0x00;
-			if (snake.dir != LEFT) {
-				snake.dir = RIGHT;
-			}
-		}
-	}
-
 	/* Check if STOP button caused the interrupt */
 	if (PORTE->ISFR & BUTTON_STOP_MASK) {
 		if ( !(PTE->PDDR & BUTTON_STOP_MASK) ) {
@@ -244,11 +234,21 @@ void PORTE_IRQHandler() {
 		}
 	}
 
+	/* Check if RIGHT button caused the interrupt */
+	if (PORTE->ISFR & BUTTON_RIGHT_MASK) {
+		if ( !(PTE->PDDR & BUTTON_RIGHT_MASK) ) {
+			PTA->PDOR = 0x00;
+			if (snake.dir != LEFT && snake.dir != STOP) {
+				snake.dir = RIGHT;
+			}
+		}
+	}
+
 	/* Check if DOWN button caused the interrupt */
 	if (PORTE->ISFR & BUTTON_DOWN_MASK) {
 		if ( !(PTE->PDDR & BUTTON_DOWN_MASK) ) {
 			PTA->PDOR = 0x00;
-			if (snake.dir != UP) {
+			if (snake.dir != UP && snake.dir != STOP) {
 				snake.dir = DOWN;
 			}
 		}
@@ -258,7 +258,7 @@ void PORTE_IRQHandler() {
 	if (PORTE->ISFR & BUTTON_UP_MASK) {
 		if ( !(PTE->PDDR & BUTTON_UP_MASK) ) {
 			PTA->PDOR = 0x00;
-			if (snake.dir != DOWN) {
+			if (snake.dir != DOWN && snake.dir != STOP) {
 				snake.dir = UP;
 			}
 		}
@@ -268,7 +268,7 @@ void PORTE_IRQHandler() {
 	if (PORTE->ISFR & BUTTON_LEFT_MASK) {
 		if ( !(PTE->PDDR & BUTTON_LEFT_MASK) ) {
 			PTA->PDOR = 0x00;
-			if (snake.dir != RIGHT) {
+			if (snake.dir != RIGHT && snake.dir != STOP) {
 				snake.dir = LEFT;
 			}
 		}
