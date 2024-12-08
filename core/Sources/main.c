@@ -34,7 +34,7 @@ typedef enum {
 
 /* Define the snake structure */
 typedef struct {
-	int body[SNAKE_LENGTH][2];  /* Array of coordinates [x, y] */
+	int body[SNAKE_LENGTH][2];  /* Array of coordinates [row, col] */
 	int length;                 /* Predefined length */
 	Direction direction;        /* Current direction of movement */
 } Snake;
@@ -83,13 +83,13 @@ void SystemConfig() {
 	for (int i = 0; i < 8; i++) {
 		PORTA->PCR[row_pins[i]] = ( 0|PORT_PCR_MUX(0x01) );
 	}
-	
+
 	/* Set corresponding PTE pins (output enable of 74HC154) for GPIO functionality */
 	PORTE->PCR[28] = ( 0|PORT_PCR_MUX(0x01) ); // #EN
-	
+
 	/* Change corresponding PTA port pins as outputs */
 	PTA->PDDR = GPIO_PDDR_PDD(0x3F000FC0);
-	
+
 	/* Change corresponding PTE port pins as outputs */
 	PTE->PDDR = GPIO_PDDR_PDD( GPIO_PIN(28) );
 }
@@ -165,32 +165,32 @@ void init_snake() {
 
 /* Update the snake position */
 void update_snake() {
-	int new_head_x = snake.body[0][0];
-    int new_head_y = snake.body[0][1];
+	int new_head_row = snake.body[0][0];
+    int new_head_col = snake.body[0][1];
 
     /* Calculate the new head position based on direction */
     switch (snake.direction) {
         case UP:
-            new_head_x--;
+            new_head_row--;
             break;
         case LEFT:
-            new_head_y--;
+            new_head_col--;
             break;
         case DOWN:
-            new_head_x++;
+            new_head_row++;
             break;
         case RIGHT:
-            new_head_y++;
+            new_head_col++;
             break;
         default:
             break;
     }
 
     /* Teleport the snake if out of bounds */
-    if (new_head_x < 0) new_head_x = ROWS - 1;
-    if (new_head_x >= ROWS) new_head_x = 0;
-    if (new_head_y < 0) new_head_y = COLS - 1;
-    if (new_head_y >= COLS) new_head_y = 0;
+    if (new_head_row < 0) new_head_row = ROWS - 1;
+    if (new_head_row >= ROWS) new_head_row = 0;
+    if (new_head_col < 0) new_head_col = COLS - 1;
+    if (new_head_col >= COLS) new_head_col = 0;
 
     /* Shift body positions */
     for (int i = snake.length - 1; i > 0; i--) {
@@ -199,15 +199,15 @@ void update_snake() {
     }
 
     /* Update the new head position */
-    snake.body[0][0] = new_head_x;
-    snake.body[0][1] = new_head_y;
+    snake.body[0][0] = new_head_row;
+    snake.body[0][1] = new_head_col;
 }
 
 /* Display the snake */
 void display_snake() {
     for (int i = 0; i < snake.length; i++) {
-		column_select(snake.body[i][0]);
-		row_select(snake.body[i][1]);
+		row_select(snake.body[i][0]);
+		column_select(snake.body[i][1]);
 		delay(400, 50);
 	}
 }
