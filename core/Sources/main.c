@@ -318,7 +318,7 @@ int main(void)
     while(1) {
 		// display_snake();
 		// update_snake();
-		delay(tdelay1, tdelay2);
+		// delay(tdelay1, tdelay2);
     }
 
     return 0;
