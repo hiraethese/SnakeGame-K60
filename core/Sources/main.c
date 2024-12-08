@@ -155,7 +155,7 @@ void row_select(unsigned int row_num) {
 /* Initialize the snake */
 void init_snake() {
 	snake.length = SNAKE_LENGTH;
-	snake.direction = RIGHT;
+	snake.direction = DOWN;
 
 	for (int i = 0; i < snake.length; i++) {
         snake.body[i][0] = 0;
