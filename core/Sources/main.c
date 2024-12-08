@@ -213,27 +213,13 @@ void update_snake() {
 
 /* Display the snake */
 void display_snake() {
-    // for (int i = 0; i < snake.length; i++) {
-	// 	row_select(snake.body[i][0]);
-	// 	column_select(snake.body[i][1]);
-	// 	delay(400, 50);
-	// }
-	for (int col = 0; col < COLS; col++) {
-        column_select(col);        // Activate the column
-        PTA->PDOR &= ~0x3F000FC0; // Clear all rows first
-
-        // Activate rows for snake segments in this column
-        for (int i = 0; i < snake.length; i++) {
-            if (snake.body[i][1] == col) {
-                PTA->PDOR |= GPIO_PDOR_PDO(GPIO_PIN(row_pins[snake.body[i][0]]));
-            }
-        }
-
-        // Enable column briefly
-        PTE->PDOR |= GPIO_PDOR_PDO(GPIO_PIN(28));  // Enable column
-        delay(50, 10);                             // Short delay for persistence
-        PTE->PDOR &= ~GPIO_PDOR_PDO(GPIO_PIN(28)); // Disable column
-    }
+    for (int i = 0; i < snake.length; i++) {
+		PTA->PDOR &= ~0x3F000FC0;
+		PTA->PDOR &= ~0x00000F00;
+		row_select(snake.body[i][0]);
+		column_select(snake.body[i][1]);
+		delay(400, 50);
+	}
 }
 
 void PORTE_IRQHandler() {
