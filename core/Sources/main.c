@@ -213,11 +213,31 @@ void update_snake() {
 
 /* Display the snake */
 void display_snake() {
-    for (int i = 0; i < snake.length; i++) {
-		row_select(snake.body[i][0]);
-		column_select(snake.body[i][1]);
-		delay(400, 50);
-	}
+    // for (int i = 0; i < snake.length; i++) {
+	// 	row_select(snake.body[i][0]);
+	// 	column_select(snake.body[i][1]);
+	// 	delay(400, 50);
+	// }
+	for (int row = 0; row < ROWS; row++) {
+        row_select(row);
+        for (int col = 0; col < COLS; col++) {
+            int pixel_on = 0;
+
+            for (int i = 0; i < snake.length; i++) {
+                if (snake.body[i][0] == row && snake.body[i][1] == col) {
+                    pixel_on = 1;
+                    break;
+                }
+            }
+
+            if (pixel_on) {
+                column_select(col);
+                PTE->PDOR |= GPIO_PDOR_PDO(GPIO_PIN(28));
+            }
+        }
+        delay(400, 50);
+        PTE->PDOR &= ~GPIO_PDOR_PDO(GPIO_PIN(28));
+    }
 }
 
 void PORTE_IRQHandler() {
