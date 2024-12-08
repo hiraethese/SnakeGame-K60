@@ -213,20 +213,14 @@ void update_snake() {
 
 /* Display the snake */
 void display_snake() {
-    // for (int i = 0; i < snake.length; i++) {
-	// 	row_select(snake.body[i][0]);
-	// 	column_select(snake.body[i][1]);
-	// 	delay(400, 50);
-	// }
-
-	// Draw each segment of the snake
+	/* Draw each segment of the snake */
     for (int i = 0; i < snake.length; i++) {
         row_select(snake.body[i][0]);
         column_select(snake.body[i][1]);
         delay(50, 10);
     }
 
-	// Clear the matrix *after* a complete display cycle
+	/* Clear the matrix after a complete display cycle */
     for (int i = 0; i < 8; i++) {
         PTA->PDOR &= ~GPIO_PDOR_PDO( GPIO_PIN(row_pins[i]) );
     }
@@ -239,7 +233,6 @@ void PORTE_IRQHandler() {
 	/* Check if STOP button caused the interrupt */
 	if (PORTE->ISFR & BUTTON_STOP_MASK) {
 		if ( !(PTE->PDDR & BUTTON_STOP_MASK) ) {
-			PTA->PDOR = 0x00;
 			if (snake.dir == STOP) {
 				snake.dir = snake.dir_before_stop;
 			} else {
@@ -252,7 +245,6 @@ void PORTE_IRQHandler() {
 	/* Check if RIGHT button caused the interrupt */
 	if (PORTE->ISFR & BUTTON_RIGHT_MASK) {
 		if ( !(PTE->PDDR & BUTTON_RIGHT_MASK) ) {
-			PTA->PDOR = 0x00;
 			if (snake.dir != LEFT && snake.dir != STOP) {
 				snake.dir = RIGHT;
 			}
@@ -262,7 +254,6 @@ void PORTE_IRQHandler() {
 	/* Check if DOWN button caused the interrupt */
 	if (PORTE->ISFR & BUTTON_DOWN_MASK) {
 		if ( !(PTE->PDDR & BUTTON_DOWN_MASK) ) {
-			PTA->PDOR = 0x00;
 			if (snake.dir != UP && snake.dir != STOP) {
 				snake.dir = DOWN;
 			}
@@ -272,7 +263,6 @@ void PORTE_IRQHandler() {
 	/* Check if UP button caused the interrupt */
 	if (PORTE->ISFR & BUTTON_UP_MASK) {
 		if ( !(PTE->PDDR & BUTTON_UP_MASK) ) {
-			PTA->PDOR = 0x00;
 			if (snake.dir != DOWN && snake.dir != STOP) {
 				snake.dir = UP;
 			}
@@ -282,7 +272,6 @@ void PORTE_IRQHandler() {
 	/* Check if LEFT button caused the interrupt */
 	if (PORTE->ISFR & BUTTON_LEFT_MASK) {
 		if ( !(PTE->PDDR & BUTTON_LEFT_MASK) ) {
-			PTA->PDOR = 0x00;
 			if (snake.dir != RIGHT && snake.dir != STOP) {
 				snake.dir = LEFT;
 			}
@@ -298,7 +287,6 @@ int main(void)
 {
 	SystemConfig();
 	init_snake();
-	PTA->PDOR = 0x00;
 
     while(1) {
 		display_snake();
