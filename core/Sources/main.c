@@ -112,7 +112,7 @@ void SystemConfig() {
 void PIT_Init() {
 	SIM->SCGC6 |= SIM_SCGC6_PIT_MASK;
     PIT->MCR = 0x00;
-    PIT->CHANNEL[0].LDVAL = 48000;
+    PIT->CHANNEL[0].LDVAL = 4800000;
     PIT->CHANNEL[0].TCTRL |= PIT_TCTRL_TIE_MASK | PIT_TCTRL_TEN_MASK;
     NVIC_EnableIRQ(PIT0_IRQn);
 }
@@ -120,6 +120,7 @@ void PIT_Init() {
 void PIT0_IRQHandler() {
 	PIT->CHANNEL[0].TFLG |= PIT_TFLG_TIF_MASK;
 	display_snake();
+	update_snake();
 }
 
 void PORTE_IRQHandler() {
@@ -316,7 +317,7 @@ int main(void)
 
     while(1) {
 		// display_snake();
-		update_snake();
+		// update_snake();
 		delay(tdelay1, tdelay2);
     }
 
