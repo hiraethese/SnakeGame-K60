@@ -26,17 +26,19 @@
 
 /* Define the direction of movement */
 typedef enum {
-    UP,
-    LEFT,
-    DOWN,
-    RIGHT
+	RIGHT,
+	STOP,
+	DOWN,
+	UP,
+	LEFT
 } Direction;
 
 /* Define the snake structure */
 typedef struct {
-	int body[SNAKE_LENGTH][2];  /* Array of coordinates [row, col] */
-	int length;                 /* Predefined length */
-	Direction direction;        /* Current direction of movement */
+	int body[SNAKE_LENGTH][2];	/* Array of coordinates [row, col] */
+	int length;					/* Predefined length */
+	Direction dir;				/* Current direction of movement */
+	Direction dir_before_stop;	/* Direction of movement before STOP state */
 } Snake;
 
 /* Global variable for the Snake structure */
@@ -155,7 +157,8 @@ void row_select(unsigned int row_num) {
 /* Initialize the snake */
 void init_snake() {
 	snake.length = SNAKE_LENGTH;
-	snake.direction = DOWN;
+	snake.dir = DOWN;
+	snake.dir_before_stop = DOWN;
 
 	for (int i = 0; i < snake.length; i++) {
         snake.body[i][0] = 0;
@@ -165,25 +168,26 @@ void init_snake() {
 
 /* Update the snake position */
 void update_snake() {
+	/* Stop the movement if STOP button is pressed */
+	if (snake.dir == STOP) {
+		return;
+	}
+
 	int new_head_row = snake.body[0][0];
     int new_head_col = snake.body[0][1];
 
     /* Calculate the new head position based on direction */
-    switch (snake.direction) {
+    switch (snake.dir) {
+		case RIGHT:
+			new_head_row--;
+            break;
+		case DOWN:
+			new_head_col++;
+            break;
         case UP:
-            // new_head_row--;
 			new_head_col--;
             break;
         case LEFT:
-            // new_head_col--;
-			new_head_row--;
-            break;
-        case DOWN:
-            // new_head_row++;
-			new_head_col++;
-            break;
-        case RIGHT:
-            // new_head_col++;
 			new_head_row++;
             break;
         default:
@@ -221,8 +225,8 @@ void PORTE_IRQHandler() {
 	if (PORTE->ISFR & BUTTON_RIGHT_MASK) {
 		if ( !(PTE->PDDR & BUTTON_RIGHT_MASK) ) {
 			PTA->PDOR = 0x00;
-			if (snake.direction != LEFT) {
-				snake.direction = RIGHT;
+			if (snake.dir != LEFT) {
+				snake.dir = RIGHT;
 			}
 		}
 	}
@@ -231,7 +235,12 @@ void PORTE_IRQHandler() {
 	if (PORTE->ISFR & BUTTON_STOP_MASK) {
 		if ( !(PTE->PDDR & BUTTON_STOP_MASK) ) {
 			PTA->PDOR = 0x00;
-			/* TODO: Implement the STOP button handling later */
+			if (snake.dir == STOP) {
+				snake.dir = snake.dir_before_stop;
+			} else {
+				snake.dir_before_stop = snake.dir;
+				snake.dir = STOP;
+			}
 		}
 	}
 
@@ -239,8 +248,8 @@ void PORTE_IRQHandler() {
 	if (PORTE->ISFR & BUTTON_DOWN_MASK) {
 		if ( !(PTE->PDDR & BUTTON_DOWN_MASK) ) {
 			PTA->PDOR = 0x00;
-			if (snake.direction != UP) {
-				snake.direction = DOWN;
+			if (snake.dir != UP) {
+				snake.dir = DOWN;
 			}
 		}
 	}
@@ -249,8 +258,8 @@ void PORTE_IRQHandler() {
 	if (PORTE->ISFR & BUTTON_UP_MASK) {
 		if ( !(PTE->PDDR & BUTTON_UP_MASK) ) {
 			PTA->PDOR = 0x00;
-			if (snake.direction != DOWN) {
-				snake.direction = UP;
+			if (snake.dir != DOWN) {
+				snake.dir = UP;
 			}
 		}
 	}
@@ -259,8 +268,8 @@ void PORTE_IRQHandler() {
 	if (PORTE->ISFR & BUTTON_LEFT_MASK) {
 		if ( !(PTE->PDDR & BUTTON_LEFT_MASK) ) {
 			PTA->PDOR = 0x00;
-			if (snake.direction != RIGHT) {
-				snake.direction = LEFT;
+			if (snake.dir != RIGHT) {
+				snake.dir = LEFT;
 			}
 		}
 	}
