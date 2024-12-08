@@ -218,25 +218,24 @@ void display_snake() {
 	// 	column_select(snake.body[i][1]);
 	// 	delay(400, 50);
 	// }
-	for (int row = 0; row < ROWS; row++) {
-        row_select(row);
-        for (int col = 0; col < COLS; col++) {
-            int pixel_on = 0;
+	for (int col = 0; col < COLS; col++) {
+        column_select(col); // Activate the current column
+        int row_mask = 0;
 
-            for (int i = 0; i < snake.length; i++) {
-                if (snake.body[i][0] == row && snake.body[i][1] == col) {
-                    pixel_on = 1;
-                    break;
-                }
-            }
-
-            if (pixel_on) {
-                column_select(col);
-                PTE->PDOR |= GPIO_PDOR_PDO(GPIO_PIN(28));
+        // Identify all rows in this column that need to be lit
+        for (int i = 0; i < snake.length; i++) {
+            if (snake.body[i][1] == col) {
+                row_mask |= GPIO_PDOR_PDO(GPIO_PIN(row_pins[snake.body[i][0]]));
             }
         }
-        delay(400, 50);
-        PTE->PDOR &= ~GPIO_PDOR_PDO(GPIO_PIN(28));
+
+        // Apply the row mask
+        PTA->PDOR = (PTA->PDOR & ~0x3F000FC0) | row_mask;
+
+        // Short delay for visibility
+        PTE->PDOR |= GPIO_PDOR_PDO(GPIO_PIN(28)); // Enable column
+        delay(100, 20); // Adjust for refresh rate
+        PTE->PDOR &= ~GPIO_PDOR_PDO(GPIO_PIN(28)); // Disable column
     }
 }
 
