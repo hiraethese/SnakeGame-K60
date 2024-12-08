@@ -148,6 +148,7 @@ void row_select(unsigned int row_num) {
 	for (int i = 0; i < 8; i++) {
 		PTA->PDOR &= ~GPIO_PDOR_PDO( GPIO_PIN(row_pins[i]) );
 	}
+
 	PTA->PDOR |= GPIO_PDOR_PDO( GPIO_PIN(row_pins[row_num]) );
 }
 
@@ -170,16 +171,20 @@ void update_snake() {
     /* Calculate the new head position based on direction */
     switch (snake.direction) {
         case UP:
-            new_head_row--;
+            // new_head_row--;
+			new_head_col--;
             break;
         case LEFT:
-            new_head_col--;
+            // new_head_col--;
+			new_head_row--;
             break;
         case DOWN:
-            new_head_row++;
+            // new_head_row++;
+			new_head_col++;
             break;
         case RIGHT:
-            new_head_col++;
+            // new_head_col++;
+			new_head_row++;
             break;
         default:
             break;
