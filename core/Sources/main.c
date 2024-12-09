@@ -22,7 +22,7 @@
 #define COLS 16
 
 /* Define the snake properties */
-#define SNAKE_LENGTH 8
+#define SNAKE_LENGTH 5
 
 /* Define the direction of movement */
 typedef enum {
