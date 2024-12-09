@@ -22,7 +22,7 @@
 #define COLS 16
 
 /* Define the snake properties */
-#define SNAKE_LENGTH 5
+#define SNAKE_LENGTH 8
 
 /* Define the direction of movement */
 typedef enum {
@@ -115,13 +115,13 @@ void PIT_Init() {
 	SIM->SCGC6 |= SIM_SCGC6_PIT_MASK;
     PIT->MCR = 0x00;
 
-	/* PIT0 for display refresh */
-	PIT->CHANNEL[0].LDVAL = 4800;
-	PIT->CHANNEL[0].TCTRL |= PIT_TCTRL_TIE_MASK | PIT_TCTRL_TEN_MASK;
+	/* PIT0 for game logic */
+    PIT->CHANNEL[0].LDVAL = 4800000;
+    PIT->CHANNEL[0].TCTRL |= PIT_TCTRL_TIE_MASK | PIT_TCTRL_TEN_MASK;
 
-	/* PIT1 for game logic */
-    PIT->CHANNEL[1].LDVAL = 4800000;
-    PIT->CHANNEL[1].TCTRL |= PIT_TCTRL_TIE_MASK | PIT_TCTRL_TEN_MASK;
+	/* PIT1 for display refresh */
+	PIT->CHANNEL[1].LDVAL = 4800;
+	PIT->CHANNEL[1].TCTRL |= PIT_TCTRL_TIE_MASK | PIT_TCTRL_TEN_MASK;
 
 	NVIC_SetPriority(PIT0_IRQn, 2);
 	NVIC_EnableIRQ(PIT0_IRQn);
@@ -132,12 +132,12 @@ void PIT_Init() {
 
 void PIT0_IRQHandler() {
 	PIT->CHANNEL[0].TFLG |= PIT_TFLG_TIF_MASK;
-	display_snake();
+	update_snake();
 }
 
 void PIT1_IRQHandler() {
-	PIT->CHANNEL[1].TFLG |= PIT_TFLG_TIF_MASK;\
-	update_snake();
+	PIT->CHANNEL[1].TFLG |= PIT_TFLG_TIF_MASK;
+	display_snake();
 }
 
 void PORTE_IRQHandler() {
@@ -331,12 +331,6 @@ int main(void)
 {
 	SystemConfig();
 	init_snake();
-
-    while(1) {
-		// display_snake();
-		// update_snake();
-		// delay(tdelay1, tdelay2);
-    }
-
+    while(1);
     return 0;
 }
