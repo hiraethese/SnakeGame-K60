@@ -1,6 +1,7 @@
+// Author: Illia Baturov (xbatur00)
+
 /* Header file with all the essential definitions for a given type of MCU */
-// #include "MK60DZ10.h"
-#include "../Includes/MK60DZ10.h"
+#include "MK60DZ10.h"
 
 /* Macros for bit-level registers manipulation */
 #define GPIO_PIN_MASK	0x1Fu
@@ -49,6 +50,7 @@ unsigned int column_pins[4] = {8, 10, 6, 11};  // A0-A3
 unsigned int row_pins[8] = {26, 24, 9, 25, 28, 7, 27, 29};  // R0-R7
 unsigned int button_pins[5] = {10, 11, 12, 26, 27};  // RIGHT, STOP, DOWN, UP, LEFT
 
+/* Predefinition of all program functions */
 void SystemConfig(void);
 void PIT_Init(void);
 void PIT0_IRQHandler(void);
@@ -63,7 +65,7 @@ void display_snake(void);
 
 /* Configuration of the necessary MCU peripherals */
 void SystemConfig() {
-	/* Hardware initialization */
+	/* Hardware initializations */
 	MCG->C4 |= ( MCG_C4_DMX32_MASK | MCG_C4_DRST_DRS(0x01) );
 	SIM->CLKDIV1 |= SIM_CLKDIV1_OUTDIV1(0x00);
 	SIM->SCGC5 |= SIM_SCGC5_PORTE_MASK;
@@ -82,8 +84,10 @@ void SystemConfig() {
 	/* Clear any pending interrupts on Port E */
 	NVIC_ClearPendingIRQ(PORTE_IRQn);
 
-	/* Enable interrupts for Port E */
+	/* Highest priority for button presses */
 	NVIC_SetPriority(PORTE_IRQn, 1);
+
+	/* Enable interrupts for Port E */
 	NVIC_EnableIRQ(PORTE_IRQn);
 
 	/* Turn on all port clocks */
@@ -108,10 +112,13 @@ void SystemConfig() {
 	/* Change corresponding PTE port pins as outputs */
 	PTE->PDDR = GPIO_PDDR_PDD( GPIO_PIN(28) );
 
+	/* Initialize periodic interrupt timers */
 	PIT_Init();
 }
 
+/* Configuration of the PIT (Periodic Interrupt Timer) */
 void PIT_Init() {
+	/* Enable the PIT module */
 	SIM->SCGC6 |= SIM_SCGC6_PIT_MASK;
     PIT->MCR = 0x00;
 
@@ -123,18 +130,22 @@ void PIT_Init() {
 	PIT->CHANNEL[1].LDVAL = 4800;
 	PIT->CHANNEL[1].TCTRL |= PIT_TCTRL_TIE_MASK | PIT_TCTRL_TEN_MASK;
 
+	/* Higher priority for game logic */
 	NVIC_SetPriority(PIT0_IRQn, 2);
 	NVIC_EnableIRQ(PIT0_IRQn);
 
+	/* Lower priority for display refresh */
 	NVIC_SetPriority(PIT1_IRQn, 3);
 	NVIC_EnableIRQ(PIT1_IRQn);
 }
 
+/* Interrupt timer for game logic */
 void PIT0_IRQHandler() {
 	PIT->CHANNEL[0].TFLG |= PIT_TFLG_TIF_MASK;
 	update_snake();
 }
 
+/* Interrupt timer for display refresh */
 void PIT1_IRQHandler() {
 	PIT->CHANNEL[1].TFLG |= PIT_TFLG_TIF_MASK;
 	display_snake();
