@@ -83,6 +83,7 @@ void SystemConfig() {
 	NVIC_ClearPendingIRQ(PORTE_IRQn);
 
 	/* Enable interrupts for Port E */
+	NVIC_SetPriority(PORTE_IRQn, 1);
 	NVIC_EnableIRQ(PORTE_IRQn);
 
 	/* Turn on all port clocks */
@@ -114,26 +115,29 @@ void PIT_Init() {
 	SIM->SCGC6 |= SIM_SCGC6_PIT_MASK;
     PIT->MCR = 0x00;
 
-	// PIT0 for game logic
-    PIT->CHANNEL[0].LDVAL = 4800000;
-    PIT->CHANNEL[0].TCTRL |= PIT_TCTRL_TIE_MASK | PIT_TCTRL_TEN_MASK;
+	/* PIT0 for display refresh */
+	PIT->CHANNEL[0].LDVAL = 4800;
+	PIT->CHANNEL[0].TCTRL |= PIT_TCTRL_TIE_MASK | PIT_TCTRL_TEN_MASK;
 
-	// PIT1 for display refresh
-	PIT->CHANNEL[1].LDVAL = 60000;
-	PIT->CHANNEL[1].TCTRL |= PIT_TCTRL_TIE_MASK | PIT_TCTRL_TEN_MASK;
+	/* PIT1 for game logic */
+    PIT->CHANNEL[1].LDVAL = 4800000;
+    PIT->CHANNEL[1].TCTRL |= PIT_TCTRL_TIE_MASK | PIT_TCTRL_TEN_MASK;
 
-    NVIC_EnableIRQ(PIT0_IRQn);
+	NVIC_SetPriority(PIT0_IRQn, 2);
+	NVIC_EnableIRQ(PIT0_IRQn);
+
+	NVIC_SetPriority(PIT1_IRQn, 3);
 	NVIC_EnableIRQ(PIT1_IRQn);
 }
 
 void PIT0_IRQHandler() {
 	PIT->CHANNEL[0].TFLG |= PIT_TFLG_TIF_MASK;
-	update_snake();
+	display_snake();
 }
 
 void PIT1_IRQHandler() {
 	PIT->CHANNEL[1].TFLG |= PIT_TFLG_TIF_MASK;\
-	display_snake();
+	update_snake();
 }
 
 void PORTE_IRQHandler() {
