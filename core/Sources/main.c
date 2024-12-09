@@ -314,7 +314,7 @@ void display_snake() {
     for (int i = 0; i < snake.length; i++) {
         row_select(snake.body[i][0]);
         column_select(snake.body[i][1]);
-        delay(500, 50);
+        delay(250, 50);
     }
 
 	/* Clear the matrix after a complete display cycle */
