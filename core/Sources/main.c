@@ -52,6 +52,7 @@ unsigned int button_pins[5] = {10, 11, 12, 26, 27};  // RIGHT, STOP, DOWN, UP, L
 void SystemConfig(void);
 void PIT_Init(void);
 void PIT0_IRQHandler(void);
+void PIT1_IRQHandler(void);
 void PORTE_IRQHandler(void);
 void delay(int t1, int t2);
 void column_select(unsigned int col_num);
@@ -112,15 +113,27 @@ void SystemConfig() {
 void PIT_Init() {
 	SIM->SCGC6 |= SIM_SCGC6_PIT_MASK;
     PIT->MCR = 0x00;
+
+	// PIT0 for game logic
     PIT->CHANNEL[0].LDVAL = 4800000;
     PIT->CHANNEL[0].TCTRL |= PIT_TCTRL_TIE_MASK | PIT_TCTRL_TEN_MASK;
+
+	// PIT1 for display refresh
+	PIT->CHANNEL[1].LDVAL = 60000;
+	PIT->CHANNEL[1].TCTRL |= PIT_TCTRL_TIE_MASK | PIT_TCTRL_TEN_MASK;
+
     NVIC_EnableIRQ(PIT0_IRQn);
+	NVIC_EnableIRQ(PIT1_IRQn);
 }
 
 void PIT0_IRQHandler() {
 	PIT->CHANNEL[0].TFLG |= PIT_TFLG_TIF_MASK;
-	display_snake();
 	update_snake();
+}
+
+void PIT1_IRQHandler() {
+	PIT->CHANNEL[1].TFLG |= PIT_TFLG_TIF_MASK;\
+	display_snake();
 }
 
 void PORTE_IRQHandler() {
