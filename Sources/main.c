@@ -50,7 +50,7 @@ unsigned int column_pins[4] = {8, 10, 6, 11};  // A0-A3
 unsigned int row_pins[8] = {26, 24, 9, 25, 28, 7, 27, 29};  // R0-R7
 unsigned int button_pins[5] = {10, 11, 12, 26, 27};  // RIGHT, STOP, DOWN, UP, LEFT
 
-/* Predefinition of all program functions */
+/* Predefinition of all functions */
 void SystemConfig(void);
 void PIT_Init(void);
 void PIT0_IRQHandler(void);
@@ -68,7 +68,9 @@ void SystemConfig() {
 	/* Hardware initializations */
 	MCG->C4 |= ( MCG_C4_DMX32_MASK | MCG_C4_DRST_DRS(0x01) );
 	SIM->CLKDIV1 |= SIM_CLKDIV1_OUTDIV1(0x00);
-	SIM->SCGC5 |= SIM_SCGC5_PORTE_MASK;
+
+	/* Turn on all port clocks */
+	SIM->SCGC5 = SIM_SCGC5_PORTA_MASK | SIM_SCGC5_PORTE_MASK;
 
 	/* Set corresponding PTE pins (buttons) for GPIO functionality */
 	for (int i = 0; i < 5; i++) {
@@ -89,9 +91,6 @@ void SystemConfig() {
 
 	/* Enable interrupts for Port E */
 	NVIC_EnableIRQ(PORTE_IRQn);
-
-	/* Turn on all port clocks */
-	SIM->SCGC5 = SIM_SCGC5_PORTA_MASK | SIM_SCGC5_PORTE_MASK;
 
 	/* Set corresponding PTA pins (column activators of 74HC154) for GPIO functionality */
 	for (int i = 0; i < 4; i++) {
