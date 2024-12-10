@@ -66,8 +66,6 @@ void display_snake(void);
 /* Configuration of the necessary MCU peripherals */
 void SystemConfig() {
 	/* Hardware initializations */
-	MCG->C4 |= ( MCG_C4_DMX32_MASK | MCG_C4_DRST_DRS(0x01) );
-	SIM->CLKDIV1 |= SIM_CLKDIV1_OUTDIV1(0x00);
 	SIM->SCGC5 |= SIM_SCGC5_PORTE_MASK;
 
 	/* Set corresponding PTE pins (buttons) for GPIO functionality */
