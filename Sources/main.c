@@ -68,9 +68,7 @@ void SystemConfig() {
 	/* Hardware initializations */
 	MCG->C4 |= ( MCG_C4_DMX32_MASK | MCG_C4_DRST_DRS(0x01) );
 	SIM->CLKDIV1 |= SIM_CLKDIV1_OUTDIV1(0x00);
-
-	/* Turn on all port clocks */
-	SIM->SCGC5 = SIM_SCGC5_PORTA_MASK | SIM_SCGC5_PORTE_MASK;
+	SIM->SCGC5 |= SIM_SCGC5_PORTE_MASK;
 
 	/* Set corresponding PTE pins (buttons) for GPIO functionality */
 	for (int i = 0; i < 5; i++) {
@@ -91,6 +89,9 @@ void SystemConfig() {
 
 	/* Enable interrupts for Port E */
 	NVIC_EnableIRQ(PORTE_IRQn);
+
+	/* Turn on all port clocks */
+	SIM->SCGC5 = SIM_SCGC5_PORTA_MASK | SIM_SCGC5_PORTE_MASK;
 
 	/* Set corresponding PTA pins (column activators of 74HC154) for GPIO functionality */
 	for (int i = 0; i < 4; i++) {
