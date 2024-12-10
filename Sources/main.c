@@ -50,7 +50,7 @@ unsigned int column_pins[4] = {8, 10, 6, 11};  // A0-A3
 unsigned int row_pins[8] = {26, 24, 9, 25, 28, 7, 27, 29};  // R0-R7
 unsigned int button_pins[5] = {10, 11, 12, 26, 27};  // RIGHT, STOP, DOWN, UP, LEFT
 
-/* Predefinition of all functions */
+/* Predefinition of all program functions */
 void SystemConfig(void);
 void PIT_Init(void);
 void PIT0_IRQHandler(void);
